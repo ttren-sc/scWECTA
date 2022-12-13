@@ -6,23 +6,22 @@ library(M3Drop)
 library(SingleCellExperiment)
 library(xfun)
 
-
 # Preprocess train dataset
-trainProcess <- function(counts, meta, path = "/home/rtt/Music/Projects/pyProjects/exp2/data", species = "human", tissue = "pancreas", name) {
+trainProcess <- function(counts, meta, path) {
   ## Create seurat object
   obj <- pipeline(counts, meta, num = 1000)
   obj@meta.data$ct <- as.factor(meta$label)
   obj@active.ident <- obj@meta.data$ct
   markers <- FindAllMarkers(obj, group.by = "ct", logfc.threshold = 0.5, only.pos = TRUE)
-
+  
   # Gene selection
   markers_filter <- markers[which(markers$avg_log2FC>1), "gene"]
   obj_hvgs <- obj@assays$RNA@var.features # 2000
   obj_m3drop <- rownames(fsM3drop(obj@assays$RNA@counts))
   obj_scran <- fsScran(obj@assays$RNA@counts, num=1000)
   # genes <- Reduce(union, list(baron_markers_filter, baron_hvgs, baron_m3drop, baron_scran))
-
-  dir_path <- paste0(path, "/", species, "_", tissue, "/train_", species, "_", name)
+  
+  dir_path <- paste0(path, "/train")
   if (!dir_exists(dir_path))
     dir.create(dir_path, recursive = TRUE)
   
@@ -32,32 +31,25 @@ trainProcess <- function(counts, meta, path = "/home/rtt/Music/Projects/pyProjec
   write.csv(data.frame(gene = obj_hvgs), paste0(dir_path, "/seurat_hvgs.csv"))
   write.csv(data.frame(gene = obj_m3drop), paste0(dir_path, "/m3drop_hvgs.csv"))
   write.csv(data.frame(gene = obj_scran), paste0(dir_path, "/scran_hvgs.csv"))
-
-  # assign(paste0(name, ".obj"), obj)
+  
   obj
 }
 
 # Preprocess test dataset
-testProcess <- function(counts, meta, path = "/home/rtt/Music/Projects/pyProjects/exp2/data", species = "human", tissue = "pancreas", name = "baron") {
-  ## seurat objectname = "xin") {
-  ## seurat object
+testProcess <- function(counts, path) {
   obj <- pipeline(counts, meta, num = 1000)
-
-  obj@meta.data$ct <- as.factor(meta$label)
-  obj@active.ident <- obj@meta.data$ct
-
-  dir_path <- paste0(path, "/", species, "_", tissue, "/test_", species, "_", name)
+  
+  dir_path <- paste0(path, "/test")
   if (!dir_exists(dir_path))
     dir.create(dir_path, recursive = TRUE)
   
   write.csv(t(obj@assays$RNA@data), paste0(dir_path, "/test.csv"))
-  write.csv(meta, paste0(dir_path, "/test_label.csv"))
-
+  
   obj
 }
 
 
-train_test_process <- function(train, test, train_meta, test_meta, path = "/home/rtt/Music/Projects/pyProjects/exp2/data/common_genes", species = "human", tissue = "pancreas", train_name = "baron", test_name = "muraro") {
+train_test_process <- function(train, test, train_meta, path) {
   ## Get common genes of train and test data
   train_genes <- rownames(train)
   test_genes <- rownames(test)
@@ -79,7 +71,7 @@ train_test_process <- function(train, test, train_meta, test_meta, path = "/home
   obj_scran <- fsScran(obj@assays$RNA@counts, num=2000)
   # genes <- Reduce(union, list(baron_markers_filter, baron_hvgs, baron_m3drop, baron_scran))
   
-  dir_path <- paste0(path, "/", train, "_pred_", test, "/", species, "_", tissue, "/train_", species, "_", train_name)
+  dir_path <- paste0(path, "/train")
   if (!dir_exists(dir_path))
     dir.create(dir_path, recursive = TRUE)
   
@@ -93,31 +85,12 @@ train_test_process <- function(train, test, train_meta, test_meta, path = "/home
   ## Create seurat object of test
   obj <- pipeline(test, test_meta)
   
-  obj@meta.data$ct <- as.factor(test_meta$label)
-  obj@active.ident <- obj@meta.data$ct
-  
-  dir_path <- paste0(path, "/", train, "_pred_", test, "/", species, "_", tissue, "/test_", species, "_", test_name)
+  dir_path <- paste0(path, "/test")
   if (!dir_exists(dir_path))
     dir.create(dir_path, recursive = TRUE)
   
   write.csv(t(obj@assays$RNA@data), paste0(dir_path, "/test.csv"))
-  write.csv(test_meta, paste0(dir_path, "/test_label.csv"))
   obj
-}
-
-# Filter genes and cells for scRNA-seq
-filter_GC <- function(counts, meta) {
-  if (class(meta) != "data.frame") {
-    if (is.null(names(meta)))
-      names(meta) <- colnames(counts)
-    meta <- data.frame(label = meta)
-  }
-  
-  filter <- counts[which(rowSums(counts) > 0), which(colSums(counts) >0)]
-  
-  pheno_filter <- data.frame(label = meta[colnames(filter), "label"], row.names = colnames(filter))
-
-  return(c(list(filter), list(pheno_filter)))
 }
 
 # Gene selection by M3Drop
@@ -158,3 +131,33 @@ pipeline <- function(count, meta, num = 1000) {
   sce
 }
 
+# Data input from linux
+myArgs <- commandArgs(trailingOnly = TRUE)
+data_path <- myArgs[1]
+out_path <- myArgs[2]
+common <- myArgs[3]
+
+data <- list.files(data_path)
+
+d1 <- grep("train_label.csv", data)
+d2 <- grep("train.csv", data)
+d3 <- grep("test.csv", data)
+
+train_label <- read.csv(paste0(data_path, "/", data[d1]), header = TRUE, row.names = 1)
+train_counts <- read.csv(paste0(data_path, "/", data[d2]), header = TRUE, row.names = 1)
+test_counts <- read.csv(paste0(data_path, "/", data[d3]), header = TRUE, row.names = 1)
+
+# Filtering 
+# Make sure that there are no cells in the training set without cell type label.
+# Make sure that there is only one colume in train label matrix, which named "label".
+train_counts_filter <- train_counts[which(rowSums(train_counts) >0), which(colSums(train_counts) >0)]
+train_label_filter <- data.frame(train_label[colnames(train_counts_filter), "label"], row.names = colnames(train_counts_filter))
+colnames(train_label_filter) <- c("label")
+test_counts_filter <- train_counts[which(rowSums(test_counts) >0), which(colSums(test_counts) >0)]
+
+if (common == F) {
+  trainProcess(train_counts_filter, train_label_filter, out_path)
+  testProcess(test_counts_filter, out_path)
+} else {
+  train_test_process(train_counts_filter, test_counts_filter, train_label_filter, out_path)
+}
