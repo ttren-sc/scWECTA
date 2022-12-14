@@ -26,5 +26,5 @@ Remember to put the gene marker list, all_cell_markers.txt in the data folder of
 
 These two steps contain in the scWECTA.py, and user could run it in linux with python 3.7. The command line is as follows,
 ```
-python scWECTA.py -train "path/train" -test "path/test/" -marker "path/marker/" -o "path/output_final/" -s "Human" -t "Pancreas" -thred 0.5
+python scWECTA.py -train "path/train/" -test "path/test/" -marker "path/marker/" -o "path/output_final/" -s "Human" -t "Pancreas" -thred 0.5
 ```
