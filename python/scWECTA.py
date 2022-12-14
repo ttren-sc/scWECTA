@@ -74,7 +74,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
             flatten_transform=True,
             verbose=False,
             geneSets=None,
-            thredhold = None
+            threshold = None
     ):
         # super().__init__(estimators=estimators)
         self.estimators = estimators
@@ -83,7 +83,7 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         self.flatten_transform = flatten_transform
         self.verbose = verbose
         self.geneSets = geneSets
-        self.thredhold = thredhold
+        self.threshold = threshold
 
 
     def fit(self, Xd, yd, sample_weight=None):
@@ -118,7 +118,6 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         self.y_train_label = self.encode.transform(self.y_train['label'])
         self.y_test_label = self.encode.transform(self.y_test['label'])
 
-
         self.fitted_ = True
 
         return self
@@ -134,11 +133,10 @@ class Ensemble(BaseEstimator, ClassifierMixin):
         result = self.encode.inverse_transform(pred_ensem)
 
         for i in range(len(pred_ensem)):
-            if pred_ensem_max[i] < self.thredhold:
+            if pred_ensem_max[i] < self.threshold:
                 result[i] = "unassigned"
         print(len(result))
         return probas, result, weight_
-
 
     def _collect_probas(self, X):
         """Collect results from clf.predict calls."""
@@ -219,9 +217,9 @@ def get_models():
     models['corr'] = Correlation(similarity="spearman")
     return models
 
-def get_ensemble(geneSets=None, thredhold = None):
+def get_ensemble(geneSets=None, threshold=None):
     models = get_models()
-    model = Ensemble(estimators=models, geneSets= geneSets, thredhold = thredhold)
+    model = Ensemble(estimators=models, geneSets= geneSets, threshold = threshold)
     return model
 
 def create_dir_not_exist(path):
@@ -239,26 +237,24 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='scWECTA.')
     parser.add_argument('-train', dest='Position of train dataset.',
-                        default="/home/rtt/Music/Projects/pyProjects/exp2/data", type=str,
-                        help='The path of single cell RNA-seq datasets. And users need to make sure the all_cell_markers.txt is in this path')
+                        type=str,
+                        help='The path of single cell RNA-seq datasets.')
     parser.add_argument('-test', dest='Position of test dataset.',
-                        default="/home/rtt/Music/Projects/pyProjects/exp2/data", type=str,
+                        type=str,
                         help='The name of train dataset.')
     parser.add_argument('-marker', dest='marker',
-                        default="/home/rtt/Music/Projects/pyProjects/exp2/data",
                         type=str,
-                        help='The name of test dataset.')
-    parser.add_argument('-o', dest='result path',
-                        default="/home/rtt/Music/Projects/pyProjects/exp2/data",
+                        help='The path of marker gene list. and users need to make sure the file, all_cell_markers.txt, is in this path')
+    parser.add_argument('-o', dest='Result path',
                         type=str,
-                        help='The name of test dataset.')
+                        help='The path of cell type annotation result.')
     parser.add_argument('-s', dest='speices', default='Human', type=str, help='The name of speices.')
     parser.add_argument('-t', dest='tissue',
                         default='Pancreas', type=str,
                         help='The name of tissue.')
-    parser.add_argument('-thred', dest='thredhold',
+    parser.add_argument('-thred', dest='threshold',
                         default=0.5, type=float,
-                        help='Thredhold.')
+                        help='Threshold for deciding final cell type annotation result.')
 
     args = parser.parse_args()  # sys.argv[1:]
 
@@ -268,7 +264,7 @@ if __name__ == '__main__':
     result_path = args.o
     speices = args.s
     tissue = args.t
-    thredhold = args.thred
+    threshold = args.thred
 
     # scRNA
     train_dirs = os.listdir(train_path)
@@ -331,16 +327,14 @@ if __name__ == '__main__':
         count.append(len(geneSets[i]))
 
     ## Model training & test
-    model = get_ensemble(geneSets=geneSets, thredhold=thredhold)
+    model = get_ensemble(geneSets=geneSets, threshold=threshold)
     model.fit(Reference, train_label)
     pred_prob, pred_ensem, pred_weight = model.predict(test)
 
     ## Predicting results
     create_dir_not_exist(result_path)
 
-    df = pd.DataFrame({"predict":pred_ensem, "prob":np.max(pred_prob, axis=1)})
-    df.to_csv(result_path + "/" + train.lower() + "_pred_" + test.lower() + "_" + str(thredhold) + ".csv")
-    pred_weight.to_csv(result_path + "/" + train.lower() + "_pred_" + test.lower() + "_" + str(thredhold) + "_weight" + ".csv")
-
+    df = pd.DataFrame({"label":pred_ensem})
+    df.to_csv(result_path + "/anno.csv")
 
 
