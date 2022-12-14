@@ -3,7 +3,7 @@ scWECTA is a soft-weighted ensemble model for single-cell cell-type annotation u
 five classifiers.
 
 ## Usage
-The workflow of scWECTA mainly contain three steps.<br /> 
+The workflow of scWECTA mainly contains three steps.<br /> 
 
 (1) Data preprocessing<br />
 (2) Model training<br/>
