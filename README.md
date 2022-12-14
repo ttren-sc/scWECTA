@@ -22,7 +22,7 @@ The first parameter in this command is the data path of all input data, and user
 After data preprocessing, results related to training data will be put into path/output/train and result related to the test data will be put into path/output/test.
 
 ### Model training and model predicting
-Remember to put the marker list, all_cell_markers.txt in the data folder of our github project, into path/marker. Besides that, create a new output folder, named output_final, to store our final cell type annotation result. 
+Remember to put the gene marker list, all_cell_markers.txt in the data folder of our github project, into path/marker. Besides that, user need to create a new output folder in path, named output_final, to store our final cell type annotation result. The result is a csv table, named "anno.csv", which contains a unique column ('label') of cell type annotation result.
 
 These two steps contain in the scWECTA.py, and user could run it in linux with python 3.7. The command line is as follows,
 ```
