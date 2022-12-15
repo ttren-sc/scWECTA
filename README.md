@@ -27,3 +27,11 @@ Model training and model predicting contain in the scWECTA.py, and user could ru
 ```
 python3 path/python/scWECTA.py -train "path/data_processed/train/" -test "path/data_processed/test/" -marker "path/marker/" -o "path/output_final/" -s "Human" -t "Pancreas" -thred 0.5
 ```
+
+### Packages used in python and R
+Before using scWECTA, you should make sure that all packages listed below are installed in python and R.<br />  
+#### python
+'''
+
+'''
+#### R
