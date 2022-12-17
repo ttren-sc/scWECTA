@@ -15,7 +15,7 @@ The data preprocessing is mainly done with preprocess.R, which taking scRNA-seq 
 ```
 Rscript path/R/preprocess.R path/data path/data_processed [T or F] 1000
 ```
-The first parameter in this command is the data path of all input data, and user need to make sure train.csv, train_label.csv and test.csv are all in this directory. The second parameter is the output path of processed data. The third parameter denotes whether you want to process train and test dataset respectly (F) or you want to process train and test dataset together (T) with common genes. The final parameter is the number of highly variablegenes user want to choose.<br />
+The first parameter in this command is the data path of all input data, and user need to make sure train.csv, train_label.csv and test.csv are all in this directory. The second parameter is the output path of processed data. The third parameter denotes whether process training and test dataset respectly (F) or process training and test dataset together using common genes(T). The final parameter is the number of highly variablegenes user want to choose.<br />
 
 After data preprocessing, results related to training data will be put into path/data_processed/train and result relevant to the test data will be stored into path/data_processed/test. If data_processed does not exist, the code will automatically create the directory.<br />  
 
