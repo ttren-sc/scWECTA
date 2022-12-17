@@ -11,7 +11,7 @@ The workflow of scWECTA mainly contains three steps.<br />
 ### Data preprocessing
 Suppose the working directory is path, and user should put all three folders in our project into it. Besides, it needs to include the other two folders, data and data_processed, which are used to store the original scRNAseq data and the results of data processing respectively.<br />  
 
-The data preprocessing is mainly done with preprocess.R, which taking scRNA-seq raw count matrix (named train.csv and test.csv respectively) and the label matrix of train data (named train_label.csv) as input. The command line under linux is as follows,
+The data preprocessing is mainly done with preprocess.R, which taking scRNA-seq raw count matrix of training and test data (named train.csv and test.csv respectively) and the label matrix of training data (named train_label.csv) as input. It's worthy noting that the rows of the raw count matrix are genes and the columns are cells, and the label matrix contains only one column named label. The command line under linux is as follows,
 ```
 Rscript path/R/preprocess.R path/data path/data_processed [T or F] 1000
 ```
