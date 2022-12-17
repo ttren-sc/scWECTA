@@ -1,6 +1,8 @@
 import pandas as pd
 import random
 from sklearn.model_selection import train_test_split
+
+
 class findMarkers():
     def __init__(self, path, speciesType = "Human", tissueType = "Pancreas"):
         self.speciesType = speciesType
@@ -16,7 +18,6 @@ class findMarkers():
         tissue_marker = markers.loc[(markers["speciesType"] == self.speciesType) & (markers["tissueType"] == self.tissueType), 'geneSymbol']
         # tissue_marker = self.markers.loc[self.markers[self.tissueType] == self.tissueType, 'geneSymbol']
         tissue_marker.index = range(len(tissue_marker))
-        print(tissue_marker)
         marker_genes = []
         for i in range(len(tissue_marker)):
             if pd.isna(tissue_marker[i]):
@@ -99,4 +100,3 @@ class geneSelection2():
         features = list(set(self.train.columns).intersection(self.select_features))
 
         return self.train.loc[:, features], self.validation.loc[:, features], self.test.loc[:, features]
-

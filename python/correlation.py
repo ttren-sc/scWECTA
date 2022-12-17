@@ -3,11 +3,7 @@ import math
 import random
 import numpy as np
 import pandas as pd
-import torch
-import torch.nn as nn
 import scipy.stats
-from threading import Thread
-import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
@@ -25,6 +21,9 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils import column_or_1d
 from sklearn.preprocessing import LabelEncoder
 from sklearn.utils import indexable
+import warnings
+
+warnings.filterwarnings('ignore')
 
 class Correlation(BaseEstimator, ClassifierMixin):
     def __init__(self, similarity='spearman'):
@@ -33,7 +32,6 @@ class Correlation(BaseEstimator, ClassifierMixin):
     def fit(self, X, y=None):
         self._check_params(X, y)
         X, y = check_X_y(X, y)
-        # check_classification_targets(y)
         X, y = indexable(X, y)
 
         self.X = X
@@ -46,12 +44,8 @@ class Correlation(BaseEstimator, ClassifierMixin):
         class_encode = self.encode.transform(y)
         self.y = class_encode
 
-
         self.df = pd.DataFrame(y)
         self.df.columns = ['class']
-
-        print(self.X.shape)
-        print(self.y.shape)
 
         return self
 
@@ -64,7 +58,6 @@ class Correlation(BaseEstimator, ClassifierMixin):
         return result
 
     def predict_proba(self, X):
-        # cts = set(self.df['y'])
         check_is_fitted(self)
         X = check_array(X)
         self.pred = X
