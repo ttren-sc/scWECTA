@@ -301,7 +301,7 @@ if __name__ == '__main__':
     create_dir_not_exist(result_path)
     df = pd.DataFrame({"label":pred_ensem})
     print(df)
-    df.to_csv(result_path + "/anno.csv")
+    df.to_csv(result_path + "/anno.csv", index=False)
     print("scWECTA is over.")
 
 
